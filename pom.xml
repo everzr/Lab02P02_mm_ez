@@ -8,30 +8,33 @@
     <name>Lab02P02_mm_ez-1.0-SNAPSHOT</name>
     
     <properties>
-        <!-- Force Java 8 bytecode; avoids class file major version 65 when building on JDK 17/21 -->
-        <maven.compiler.release>8</maven.compiler.release>
-        <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
+        <!-- Target Java 11 for Payara 5 compatibility; build can use newer JDK, but bytecode will be 11 -->
+        <maven.compiler.release>11</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <failOnMissingWebXml>false</failOnMissingWebXml>
+        <!-- Jakarta EE 8 umbrella API (javax.* namespace) -->
         <jakartaee>8.0.0</jakartaee>
     </properties>
     
     <dependencies>
+        <!-- Jakarta EE 8 umbrella API (still javax.*); scope provided because the app server supplies it -->
         <dependency>
             <groupId>jakarta.platform</groupId>
             <artifactId>jakarta.jakartaee-api</artifactId>
             <version>${jakartaee}</version>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>8.0.28</version>
-        </dependency>
+        <!-- JPA provider for JPA 2.2 / javax.* -->
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
             <artifactId>eclipselink</artifactId>
             <version>2.7.9</version>
+        </dependency>
+        <!-- JDBC driver -->
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>8.0.28</version>
         </dependency>
     </dependencies>
     
@@ -53,31 +56,7 @@
                     <failOnMissingWebXml>false</failOnMissingWebXml>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>2.6</version>
-                <executions>
-                    <execution>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>copy</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${endorsed.dir}</outputDirectory>
-                            <silent>true</silent>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>jakarta.platform</groupId>
-                                    <artifactId>jakarta.jakartaee-api</artifactId>
-                                    <version>${jakartaee}</version>
-                                    <type>jar</type>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+            <!-- No endorsed mechanism required on modern JDKs / Jakarta EE 10 -->
         </plugins>
     </build>
 </project>
