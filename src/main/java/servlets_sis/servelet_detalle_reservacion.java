@@ -7,6 +7,7 @@ package servlets_sis;
 import Entity.ControllerDetalleReservacion;
 import Entity.ControllerReservaciones;
 import Entity.DetalleReservacion;
+import java.util.List;
 import java.io.IOException;
 import java.io.PrintWriter;
 import javax.servlet.ServletException;
@@ -63,7 +64,37 @@ public class servelet_detalle_reservacion extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        String accion = request.getParameter("accion");
+        int id = 0;
+        if (request.getParameter("id") != null) {
+            try { id = Integer.parseInt(request.getParameter("id")); } catch (NumberFormatException ignored) {}
+        }
+
+        List<DetalleReservacion> consultaGeneral = this.cdetalle_reservaciones.traerListaDetalleReservaciones();
+        if (accion == null) accion = "con";
+
+        switch (accion) {
+            case "con":
+                request.setAttribute("detalles", consultaGeneral);
+                request.getRequestDispatcher("Vistas/view_detalle_reservacion.jsp").forward(request, response);
+                break;
+            case "mod":
+                DetalleReservacion d = this.cdetalle_reservaciones.traerDetalleReservacion(id);
+                request.setAttribute("detalle", d);
+                request.getRequestDispatcher("Vistas/upd_detalle_reservacion.jsp").forward(request, response);
+                break;
+            case "del":
+                this.cdetalle_reservaciones.eliminarDetalleReservacion(id);
+                consultaGeneral = this.cdetalle_reservaciones.traerListaDetalleReservaciones();
+                request.setAttribute("detalles", consultaGeneral);
+                request.getRequestDispatcher("Vistas/view_detalle_reservacion.jsp").forward(request, response);
+                break;
+            case "add":
+                List<DetalleReservacion> consultaUltimos = this.cdetalle_reservaciones.consultaUltimosDetalleReservacion(5, 1);
+                request.setAttribute("detalles", consultaUltimos);
+                request.getRequestDispatcher("Vistas/add_detalle_reservacion.jsp").forward(request, response);
+                break;
+        }
     }
 
     /**
@@ -77,7 +108,31 @@ public class servelet_detalle_reservacion extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        request.setCharacterEncoding("UTF-8");
+
+        String asiento = request.getParameter("txtAsiento");
+        String clase = request.getParameter("txtClase");
+        // Relaciones (ID_Reservacion, ID_Vuelo) pueden parsearse si vienen: txtIdReservacion, txtIdVuelo
+        // Por ahora dejamos que se asignen en otra capa si se requiere.
+
+        detallereservacion.setAsiento(nullIfEmpty(asiento));
+        detallereservacion.setClase(nullIfEmpty(clase));
+
+        String btnAgregar = request.getParameter("btnAgregar");
+        String btnUpdate = request.getParameter("btnUpdate");
+
+        if (btnAgregar != null && !btnAgregar.isEmpty()) {
+            this.cdetalle_reservaciones.crearDetalleReservacion(detallereservacion);
+        } else if (btnUpdate != null && !btnUpdate.isEmpty()) {
+            int id = 0;
+            try { id = Integer.parseInt(request.getParameter("txtid")); } catch (NumberFormatException ignored) {}
+            if (id > 0) detallereservacion.setIDDetalle(id);
+            this.cdetalle_reservaciones.editarDetalleReservacion(detallereservacion);
+        }
+
+        List<DetalleReservacion> consultaUltimos = this.cdetalle_reservaciones.consultaUltimosDetalleReservacion(5, 1);
+        request.setAttribute("detalles", consultaUltimos);
+        request.getRequestDispatcher("Vistas/add_detalle_reservacion.jsp").forward(request, response);
     }
 
     /**
@@ -89,5 +144,9 @@ public class servelet_detalle_reservacion extends HttpServlet {
     public String getServletInfo() {
         return "Short description";
     }// </editor-fold>
+
+    private static String nullIfEmpty(String v) {
+        return (v == null || v.trim().isEmpty()) ? null : v.trim();
+    }
 
 }
