@@ -3,8 +3,11 @@
   <!-- Define Persistence Unit -->
   <persistence-unit name="pruebaJPAPU" transaction-type="RESOURCE_LOCAL">
     <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+    <!-- Entity classes -->
     <class>Entity.DetalleReservacion</class>
-    <class>Entity.DetalleReservacion</class>
+    <class>Entity.Vuelos</class>
+    <class>Entity.Pasajeros</class>
+    <class>Entity.Reservaciones</class>
     <properties>
       <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/sistema_vuelos?zeroDateTimeBehavior=CONVERT_TO_NULL"/>
       <property name="javax.persistence.jdbc.user" value="root"/>
